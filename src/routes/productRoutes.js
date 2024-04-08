@@ -1,66 +1,121 @@
-const express = require('express');
-const router = express.Router();
-const ProductManager = require('../dao/ProductManager');
+import { Router } from "express";
+import ProductManager from "../dao/ProductManager.js";
 
-const productManager = new ProductManager('./src/data/productos.json');
+const Producto = new ProductManager();
+const router = Router();
 
-// Obtener todos los productos
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
     try {
-        const productos = await productManager.leerProductos();
-        res.status(200).json(productos);
-    } catch (error) {
-        res.status(500).json({ error: 'Error al obtener los productos' });
-    }
-});
+        let resultado = await Producto.getProducts();
 
-// Obtener un producto por su ID
-router.get('/:pid', async (req, res) => {
-    try {
-        const id = parseInt(req.params.pid);
-        const producto = await productManager.obtenerProducto(id);
-        if (producto) {
-            res.status(200).json(producto);
-        } else {
-            res.status(404).json({ message: `No se encontró ningún producto con el ID ${id}` });
+        // QUERY PARAMS
+        let limit = parseInt(req.query.limit);
+        if (limit) {
+            let productosLimitados = resultado.slice(0, limit);
+            res.setHeader("Content-Type", "application/json");
+            return res.json(productosLimitados);
         }
+        // FIN QUERY PARAMS
+
+        res.setHeader("Content-Type", "application/json");
+        res.json(resultado);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener el producto' });
+        res.setHeader("Content-Type", "application/json");
+        res.status(500).json({ Error: "Error 500 - Error inesperado en el servidor" });
     }
 });
 
-// Agregar un nuevo producto
-router.post('/', async (req, res) => {
+router.get("/:pid", async (req, res) => {
     try {
-        const producto = req.body;
-        const nuevoProducto = await productManager.agregarProducto(producto);
-        res.status(201).json(nuevoProducto);
+        await Producto.getProducts();
+
+        let id = parseInt(req.params.pid);
+        let resultado = await Producto.getProductById(id);
+        res.setHeader("Content-Type", "application/json");
+        return res.json(resultado);
     } catch (error) {
-        res.status(500).json({ error: 'Error al agregar el producto' });
+        res.setHeader("Content-Type", "application/json");
+        return res.status(500).json({
+            message: "Error 500 - Error inesperado en el Servidor"
+        });
     }
 });
 
-// Actualizar un producto por su ID
-router.put('/:pid', async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const id = parseInt(req.params.pid);
-        const productoActualizado = req.body;
-        await productManager.actualizarProducto(id, productoActualizado);
-        res.status(200).json({ message: 'Producto actualizado correctamente' });
+        await Producto.getProducts(); 
+
+        let { title, description, price, thumbnail, code, stock, category, status } = req.body;
+
+        if (!title || !description || !price || !thumbnail || !code || !stock || !category || !status) {
+            res.setHeader("Content-Type", "application/json");
+            return res.status(400).json({
+                message: "Error 400 - No se enviaron todos los datos necesarios para crear un nuevo producto"
+            });
+        }
+
+        let codigoRepetido = Producto.products.some(elem => elem.code == code);
+        if (codigoRepetido) {
+            res.setHeader("Content-Type", "application/json");
+            return res.status(400).json({
+                message: "Error 400 - El código del producto que se quiere agregar ya está repetido en otro producto"
+            });
+        }
+
+        let nuevoProducto = await Producto.addProduct({ title, description, price, thumbnail, code, stock, category, status });
+        res.setHeader("Content-Type", "application/json");
+        return res.status(200).json(nuevoProducto);
     } catch (error) {
-        res.status(500).json({ error: 'Error al actualizar el producto' });
+        res.setHeader("Content-Type", "application/json");
+        return res.status(500).json({
+            message: "Error 500 - Error inesperado en el Servidor"
+        });
     }
 });
 
-// Eliminar un producto por su ID
-router.delete('/:pid', async (req, res) => {
+router.put("/:pid", async (req, res) => {
     try {
-        const id = parseInt(req.params.pid);
-        await productManager.eliminarProducto(id);
-        res.status(200).json({ message: 'Producto eliminado correctamente' });
+        await Producto.getProducts();
+
+        let id = parseInt(req.params.pid);
+        let { title, description, price, thumbnail, code, stock, category, status } = req.body;
+
+        // VALIDACIONES
+        if (!title || !description || !price || !thumbnail || !code || !stock || !category || !status) {
+            res.setHeader("Content-Type", "application/json");
+            return res.status(400).json({
+                message: "Error 400 - No se enviaron todos los datos necesarios para editar un producto"
+            });
+        }
+
+        let codigoRepetido = Producto.products.some(elem => elem.code == code);
+        if (codigoRepetido) {
+            res.setHeader("Content-Type", "application/json");
+            return res.status(400).json({
+                message: "Error 400 - El código del producto que se quiere agregar ya está repetido en otro producto"
+            });
+        }
+
+        let nuevoProducto = await Producto.updateProduct(id, { title, description, price, thumbnail, code, stock, category, status });
+        res.setHeader("Content-Type", "application/json");
+        return res.status(200).json(nuevoProducto);
     } catch (error) {
-        res.status(500).json({ error: 'Error al eliminar el producto' });
+        res.setHeader("Content-Type", "application/json");
+        return res.status(500).json({ error: "Error en el Servidor al devolver el producto a editar" });
     }
 });
 
-module.exports = router;
+router.delete("/:pid", async (req, res) => {
+    try {
+        await Producto.getProducts();
+        let id = parseInt(req.params.pid);
+        let producto = await Producto.deleteProduct(id);
+        res.setHeader("Content-Type", "application/json");
+        res.status(200).json(producto);
+    } catch (error) {
+        res.setHeader("Content-Type", "application/json");
+        return res.status(500).json({ error: "Error en el Servidor al querer eliminar el producto" });
+    }
+});
+
+export { router };

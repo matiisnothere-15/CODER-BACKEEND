@@ -1,17 +1,28 @@
-const express = require('express');
-const productRoutes = require('./src/routes/productRoutes');
-const cartRoutes = require('./src/routes/cartRoutes');
+import express from "express";
+import { router as productsRouter } from "./routes/productRoutes.js";
+import { router as cartsRouter } from "./routes/cartsRoutes.js";
 
-const app = express();
 const PORT = 8080;
 
-// Middleware para manejar datos JSON
+const app = express();
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Rutas para productos y carritos
-app.use('/api/products', productRoutes);
-app.use('/api/carts', cartRoutes);
+// RUTAS CON ROUTER
+app.use("/api/products", productsRouter);
+app.use("/api/carts", cartsRouter);
+// FIN RUTAS CON ROUTER
 
-app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+app.get("/", (req, res) => {
+    res.send("Home page");
 });
+
+app.get("*", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+    res.status(404).json({
+        message: "Error 404 - page not found"
+    });
+});
+
+const server = app.listen(PORT, () => console.log(`Servidor escuchando en el puerto ${PORT}`));

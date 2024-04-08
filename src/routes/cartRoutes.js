@@ -1,34 +1,45 @@
-const express = require('express');
-const router = express.Router();
-const CartManager = require('../dao/CartManager');
+import { Router } from "express";
+import CartManager from "../dao/CartManager.js";
 
-const cartManager = new CartManager('./src/data/carrito.json');
+const Carts = new CartManager();
+const router = Router();
 
-// Obtener el carrito por su ID
-router.get('/:cid', async (req, res) => {
+router.get("/:cid", async (req, res) => {
     try {
-        const cid = parseInt(req.params.cid);
-        const carrito = await cartManager.obtenerCarrito(cid);
-        if (carrito) {
-            res.status(200).json(carrito);
-        } else {
-            res.status(404).json({ message: `No se encontró ningún carrito con el ID ${cid}` });
+        const id = parseInt(req.params.cid);
+        const carrito = await Carts.getCartById(id);
+        res.status(200).json(carrito);
+    } catch (error) {
+        res.status(500).json({ error: "Error inesperado en el servidor" });
+    }
+});
+
+router.post("/", async (req, res) => {
+    try {
+        const nuevoCarrito = await Carts.createCart();
+        res.status(200).json(nuevoCarrito);
+    } catch (error) {
+        res.status(500).json({ error: "Error inesperado en el servidor" });
+    }
+});
+
+router.post("/:cid/products/:pid", async (req, res) => {
+    try {
+        const cid = req.params.cid;
+        const pid = req.params.pid;
+
+        let carrito = await Carts.getCartById(cid);
+        if (!carrito) {
+            return res.status(404).json({ message: "No existe el carrito en el que desea agregar productos" });
         }
+
+        await Carts.addToCart(carrito, pid);
+
+        const dbActualizada = await Carts.getCarts();
+        res.status(200).json(dbActualizada);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener el carrito' });
+        res.status(500).json({ error: "Error inesperado en el servidor" });
     }
 });
 
-// Agregar un producto al carrito
-router.post('/:cid/product/:pid', async (req, res) => {
-    try {
-        const cid = parseInt(req.params.cid);
-        const pid = parseInt(req.params.pid);
-        await cartManager.agregarProductoAlCarrito(cid, pid);
-        res.status(200).json({ message: 'Producto agregado al carrito correctamente' });
-    } catch (error) {
-        res.status(500).json({ error: 'Error al agregar producto al carrito' });
-    }
-});
-
-module.exports = router;
+export { router };

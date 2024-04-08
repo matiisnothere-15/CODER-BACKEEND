@@ -1,71 +1,87 @@
-const fs = require("fs").promises;
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 class ProductManager {
-    constructor(filePath) {
-        this.filePath = filePath;
-        this.productos = [];
-        this.init(); // Cargar datos al inicializar el ProductManager
+    constructor(dirPath) {
+        this.products = [];
+        this.path = path.join(dirPath, "src", "db", "products.json");
+        this.idPath = path.join(dirPath, "src", "db", "idProducts.txt");
     }
 
-    async init() {
-        try {
-            const data = await fs.readFile(this.filePath, { encoding: "utf-8" });
-            this.productos = JSON.parse(data);
-            console.log("Productos cargados exitosamente.");
+    async addProduct(obj) {
+        try {            
+            await this.getIdProducts();
+            const id = ++this.idProducts;
+            await fs.promises.writeFile(this.idPath, id.toString());
+            const nuevoProducto = { id, ...obj };
+            this.products.push(nuevoProducto);
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products, null, 4));
+            return this.products;
         } catch (error) {
-            console.error("Error al cargar los productos:", error);
+            throw new Error("Error al agregar producto");
         }
     }
 
-    async leerProductos() {
-        return this.productos;
-    }
-
-    async guardarProductos() {
+    async getProducts() {
         try {
-            await fs.writeFile(this.filePath, JSON.stringify(this.productos, null, 2));
-            console.log("Productos guardados exitosamente.");
+            let resultado = await fs.promises.readFile(this.path, { encoding: "utf-8" });
+            let productosParseados = JSON.parse(resultado);
+            if (!Array.isArray(productosParseados)) {
+                throw new Error("Error, la DB no tiene un formato de array válido");
+            }
+            this.products = [...productosParseados];
+            return productosParseados;
         } catch (error) {
-            console.error("Error al guardar los productos:", error);
+            throw new Error("Error al obtener los productos");
         }
     }
 
-    async obtenerProducto(id) {
-        return this.productos.find(producto => producto.id === id);
+    async getProductById(id) {
+        try {
+            const producto = this.products.find(elem => elem.id === id);
+            return producto || "No hay productos con el id solicitado";
+        } catch (error) {
+            throw new Error("Error al obtener el producto");
+        }
     }
 
-    async agregarProducto(producto) {
+    async deleteProduct(id) {
         try {
-            this.productos.push(producto);
-            await this.guardarProductos();
+            const productoIndex = this.products.findIndex(elem => elem.id === id);
+            if (productoIndex === -1) {
+                return "El id del producto que desea eliminar no existe";
+            }
+            const productoEliminado = this.products.splice(productoIndex, 1)[0];
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products, null, 4));
+            return productoEliminado;
+        } catch (error) {
+            throw new Error("Error al eliminar el producto");
+        }
+    }
+
+    async updateProduct(id, obj) {
+        try {
+            const productoIndex = this.products.findIndex(elem => elem.id === id);
+            if (productoIndex === -1) {
+                return "El ID del producto a editar no existe";
+            }
+            const producto = { id, ...obj };
+            this.products[productoIndex] = producto;
+            await fs.promises.writeFile(this.path, JSON.stringify(this.products, null, 4));
             return producto;
         } catch (error) {
-            console.error("Error al agregar el producto:", error);
+            throw new Error("Error al editar el producto");
         }
     }
 
-    async actualizarProducto(id, productoActualizado) {
-        const index = this.productos.findIndex(producto => producto.id === id);
-        if (index !== -1) {
-            this.productos[index] = { ...this.productos[index], ...productoActualizado };
-            await this.guardarProductos();
-            console.log("Producto actualizado correctamente.");
-        } else {
-            console.error(`No se encontró ningún producto con el ID ${id}.`);
-        }
-    }
-
-    async eliminarProducto(id) {
-        const index = this.productos.findIndex(producto => producto.id === id);
-        if (index !== -1) {
-            this.productos.splice(index, 1);
-            await this.guardarProductos();
-            console.log("Producto eliminado correctamente.");
-        } else {
-            console.error(`No se encontró ningún producto con el ID ${id}.`);
+    async getIdProducts() {
+        try {
+            const ultimoId = await fs.promises.readFile(this.idPath, { encoding: "utf-8" });
+            this.idProducts = parseInt(ultimoId);
+        } catch (error) {
+            throw new Error("Error al obtener el último ID de la DB");
         }
     }
 }
 
-module.exports = ProductManager;
+export default ProductManager;

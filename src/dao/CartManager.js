@@ -1,97 +1,74 @@
-const fs = require("fs").promises;
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 class CartManager {
-    constructor(filePath) {
-        this.filePath = filePath;
+    constructor(dirPath) {
+        this.carts = [];
+        this.path = path.join(dirPath, "src", "db", "carts.json");
+        this.idPath = path.join(dirPath, "src", "db", "idCarts.txt");
+        this.idCarts = 0;
     }
 
-    async leerCarrito() {
+    async getIdCart() {
         try {
-            const data = await fs.readFile(this.filePath, { encoding: "utf-8" });
-            return JSON.parse(data);
+            const ultimoId = await fs.promises.readFile(this.idPath, { encoding: "utf-8" });
+            this.idCarts = parseInt(ultimoId);
         } catch (error) {
-            console.error("Error al leer el archivo del carrito:", error);
-            throw error;
-        }
-    }
-
-    async guardarCarrito(carrito) {
-        try {
-            await fs.writeFile(this.filePath, JSON.stringify(carrito, null, 2));
-            console.log("Carrito guardado exitosamente.");
-        } catch (error) {
-            console.error("Error al guardar el carrito:", error);
-            throw error;
+            throw new Error("Error al obtener el último ID de la DB");
         }
     }
 
-    async agregarProductoAlCarrito(cid, producto) {
+    async getCarts() {
         try {
-            const carrito = await this.leerCarrito();
-            const indice = carrito.findIndex(cart => cart.id === cid);
-            if (indice !== -1) {
-                // Verificar si el producto ya está en el carrito
-                const existingProduct = carrito[indice].products.find(p => p.id === producto.id);
-                if (existingProduct) {
-                    existingProduct.quantity++;
-                } else {
-                    carrito[indice].products.push({ id: producto.id, quantity: 1 });
-                }
-                await this.guardarCarrito(carrito);
-                console.log("Producto agregado al carrito.");
-            } else {
-                console.log(`No se encontró ningún carrito con el ID ${cid}.`);
+            let carts = await fs.promises.readFile(this.path, { encoding: "utf-8" });
+            let parsedCarts = JSON.parse(carts);
+            if (!Array.isArray(parsedCarts)) {
+                throw new Error("Error, la DB no tiene un formato de array válido");
             }
+            this.carts = [...parsedCarts];
+            return parsedCarts;
         } catch (error) {
-            console.error("Error al agregar producto al carrito:", error);
-            throw error;
+            throw new Error("Error al obtener los carritos");
         }
     }
-    async actualizarProductoEnCarrito(cid, pid, cantidad) {
+
+    async createCart() {
         try {
-            const carrito = await this.leerCarrito();
-            const indice = carrito.findIndex(cart => cart.id === cid);
-            if (indice !== -1) {
-                const productoIndex = carrito[indice].products.findIndex(p => p.id === pid);
-                if (productoIndex !== -1) {
-                    carrito[indice].products[productoIndex].quantity = cantidad;
-                    await this.guardarCarrito(carrito);
-                    console.log("Producto actualizado en el carrito correctamente.");
-                } else {
-                    console.error(`No se encontró ningún producto con el ID ${pid} en el carrito.`);
-                }
-            } else {
-                console.error(`No se encontró ningún carrito con el ID ${cid}.`);
-            }
+            await this.getIdCart();
+            this.idCarts += 1;
+            const nuevoCarrito = { id: this.idCarts, products: [] };
+            this.carts.push(nuevoCarrito);
+            await fs.promises.writeFile(this.idPath, this.idCarts.toString());
+            await fs.promises.writeFile(this.path, JSON.stringify(this.carts, null, 4));
+            return nuevoCarrito;
         } catch (error) {
-            console.error("Error al actualizar producto en el carrito:", error);
-            throw error;
+            throw new Error("Error al crear el carrito");
         }
     }
-    
-    async eliminarProductoDelCarrito(cid, pid) {
+
+    async getCartById(id) {
         try {
-            const carrito = await this.leerCarrito();
-            const indice = carrito.findIndex(cart => cart.id === cid);
-            if (indice !== -1) {
-                const productoIndex = carrito[indice].products.findIndex(p => p.id === pid);
-                if (productoIndex !== -1) {
-                    carrito[indice].products.splice(productoIndex, 1);
-                    await this.guardarCarrito(carrito);
-                    console.log("Producto eliminado del carrito correctamente.");
-                } else {
-                    console.error(`No se encontró ningún producto con el ID ${pid} en el carrito.`);
-                }
-            } else {
-                console.error(`No se encontró ningún carrito con el ID ${cid}.`);
-            }
+            const carrito = this.carts.find(elem => elem.id === id);
+            return carrito || "No existe carrito con el ID proporcionado";
         } catch (error) {
-            console.error("Error al eliminar producto del carrito:", error);
-            throw error;
+            throw new Error("Error al obtener el carrito");
         }
     }
-    
+
+    async addToCart(carrito, pid) {
+        try {
+            const productoIndex = carrito.products.findIndex(elem => elem.producto === pid);
+            if (productoIndex !== -1) {
+                carrito.products[productoIndex].quantity += 1;
+            } else {
+                carrito.products.push({ producto: pid, quantity: 1 });
+            }
+            await fs.promises.writeFile(this.path, JSON.stringify(this.carts, null, 4));
+            return carrito;
+        } catch (error) {
+            throw new Error("Error al agregar producto al carrito");
+        }
+    }
 }
 
-module.exports = CartManager;
+export default CartManager;

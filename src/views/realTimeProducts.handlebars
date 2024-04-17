@@ -1,0 +1,107 @@
+
+<div class="containerRealTime">
+    <a class="m-5 mt-5" href="/">home</a>
+
+    <form class="row g-3 mx-5" id="formProduct">
+        <h1 class="mb-4">Lista en tiempo real</h1>
+        
+        <!-- Nombre del Producto -->
+        <div class="col-md-4">
+            <label for="title" class="form-label">Nombre del producto</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-alphabet-uppercase"></i></span>
+                <input type="text" class="form-control" name="title" id="title" placeholder="Ingresa nombre producto" required>
+            </div>
+        </div>
+
+        <!-- Descripcion -->
+        <div class="col-md-4">
+            <label for="description" class="form-label">Descripcion</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-file-text"></i></span>
+                <input type="text" class="form-control" name="description" id="description" placeholder="Da breve descripcion" required>
+            </div>
+        </div>
+
+        <!-- Stock -->
+        <div class="col-md-4">
+            <label for="stock" class="form-label">Stock</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-box"></i></span>
+                <input type="number" class="form-control" name="stock" id="stock" placeholder="Ingresa cantidad" required>
+            </div>
+        </div>
+
+        <!-- Imagen -->
+        <div class="col-md-4">
+            <label for="thumbnail" class="form-label">Imagen</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-camera"></i></span>
+                <input type="file" class="form-control" name="thumbnail" id="thumbnail" placeholder="Imagen" required>
+            </div>
+        </div>
+
+        <!-- Categoria -->
+        <div class="col-md-4">
+            <label for="category" class="form-label">Categoria</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-grid"></i></span>
+                <input type="text" class="form-control" name="category" id="category" placeholder="Ingresa su categoria" required>
+            </div>
+        </div>
+
+        <!-- Precio -->
+        <div class="col-md-4">
+            <label for="price" class="form-label">Precio</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-cash-coin"></i></span>
+                <input type="text" class="form-control" name="price" id="price" placeholder="Ingresa precio" required>
+            </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="col-md-4">
+            <div class="form-check mt-4">
+                <input type="checkbox" class="form-check-input" name="status" id="flexCheckChecked" value="true" checked>
+                <label class="form-check-label" for="flexCheckChecked">Estado</label>
+            </div>
+        </div>
+
+        <!-- Codigo -->
+        <div class="col-md-4">
+            <label for="code" class="form-label">Codigo</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                <input type="text" class="form-control" name="code" id="code" placeholder="Codigo del producto" required>
+            </div>
+        </div>
+
+        <!-- Boton Registrar -->
+        <div class="col-md-8 mt-4">
+            <button class="btn btn-primary" type="submit" id="add-btn">Registrar producto</button>
+        </div>
+
+        <hr>
+
+        <!-- Eliminar producto por ID -->
+        <h4>Eliminar producto</h4>
+        <div class="col-md-6">
+            <label for="id-product" class="form-label">ID del producto</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-trash"></i></span>
+                <input type="text" class="form-control" name="id-prod" id="id-prod" placeholder="Ej. 123">
+            </div>
+        </div>
+
+        <!-- Boton Eliminar -->
+        <div class="col-md-6 mt-5">
+            <button class="btn btn-danger" type="button" id="delete-id-btn">Eliminar producto</button>
+        </div>
+        <hr>
+    </form>
+
+    <div class="row mt-8" id="list-products"></div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/realTimeProducts.js"></script>

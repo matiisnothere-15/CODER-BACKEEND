@@ -1,0 +1,29 @@
+<a class="m-5 mt-5" href="/realtimeproducts">tiempo real</a>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Productos</h1>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-md-3">  
+          {{#each listOfProducts}}
+         <div class="col mb-4">
+            <div class="card h-100 bg-light">
+                <div class="card-header bg-primary text-white">
+                    <i class="bi bi-tag"></i>Code: {{this.code}}
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title text-white">{{this.title}}</h5>
+                    <ul class="list-unstyled">
+                        <li ><i class="bi bi-info-circle">ID : </i>{{this.id}}</li>
+                        <li ><i class="bi bi-file-text">Descripcion : {{this.description}}</i></li>
+                        <li ><i class="bi bi-currency-dollar">Precio : {{this.price}}</i></li>
+                        <li ><i class="bi bi-grid"></i>Categoria : {{this.category}}</li>
+                        <li ><i class="bi bi-check-circle"> Estado : {{this.status}}</i></li>
+                        <li ><i class="bi bi-box"></i>Stock : {{this.stock}}</li>
+                        <li >
+                            <i class="bi bi-image"></i>Imagen : <img src="{{this.thumbnail}}" alt="{{this.title}}" class="img-fluid mt-2">
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+      </div> 
+</div>

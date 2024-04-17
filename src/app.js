@@ -1,28 +1,75 @@
 import express from "express";
-import { router as productsRouter } from "./routes/productRoutes.js";
-import { router as cartsRouter } from "./routes/cartsRoutes.js";
+import { ProductManager } from './dao/ProductManager.js';
+import { productRouter } from "./routes/products-router.js"
+import { CartManager } from "./dao/CartManager.js";
+import { cartsRouter } from "./routes/cart-router.js";
+import { router as vistasRouter } from './routes/vistas.router.js';
+import { errorHandler, middleware01, middleware02, middleware03 } from "./middleware/middleW01.js";
+import { engine } from "express-handlebars";
+import path from "path"; 
+import __dirname from "./utils.js"; 
+import { Server } from "socket.io";
 
-const PORT = 8080;
-
+const puerto = 8080;
 const app = express();
 
+export const productManager = new ProductManager;
+export const cartManager = new CartManager;
+
+// Middlewares
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 
-// RUTAS CON ROUTER
-app.use("/api/products", productsRouter);
-app.use("/api/carts", cartsRouter);
-// FIN RUTAS CON ROUTER
+// Configuración de Handlebars
+app.engine('handlebars', engine());
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname,'/views'));
 
-app.get("/", (req, res) => {
-    res.send("Home page");
+// Contenido estático
+app.use(express.static(path.join(__dirname,'/public')));
+
+// Rutas
+app.use('/api/products', productRouter);
+app.use('/api/carts', cartsRouter);
+app.use('/', vistasRouter);
+
+// Ruta predeterminada
+app.use('/', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.status(200).send("Todo Ok");
 });
 
-app.get("*", (req, res) => {
-    res.setHeader("Content-Type", "application/json");
-    res.status(404).json({
-        message: "Error 404 - page not found"
+// Middleware de manejo de errores
+app.use(errorHandler);
+
+// Escucha del servidor
+const serverHTTP = app.listen(puerto, () => console.log('Servidor andando en puerto ',  puerto));
+export const io = new Server(serverHTTP);
+
+// Web sockets
+io.on("connection", async socket => {
+    socket.on("message", (message) => {
+        console.log(message);
+    });
+
+    console.log(`Se conectó un cliente con ID ${socket.id}`);
+
+    // Emitir lista de productos al cliente
+    const listOfProducts = await productManager.getProducts(); 
+    socket.emit('sendProducts', listOfProducts);
+
+    // Escuchar eventos de agregar producto
+    socket.on("addProduct", async (objeto) => {
+        await productManager.addProduct(objeto);
+        const updatedListOfProducts = await productManager.getProducts(); 
+        socket.emit('sendProducts', updatedListOfProducts);
+    });
+
+    // Escuchar eventos de eliminar producto
+    socket.on("deleteProduct", async (id) => {
+        console.log("Se recibió un evento para eliminar el producto con ID:", id);
+        await productManager.deleteProductById(id);
+        const updatedListOfProducts = await productManager.getProducts(); 
+        socket.emit('sendProducts', updatedListOfProducts);
     });
 });
-
-const server = app.listen(PORT, () => console.log(`Servidor escuchando en el puerto ${PORT}`));

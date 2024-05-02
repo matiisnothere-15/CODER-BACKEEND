@@ -2,9 +2,21 @@ import { Router } from 'express';
 import { productManager } from '../app.js';
 import { auth } from '../middleware/middleW01.js';
 import { upload } from '../utils.js';
+import express from 'express';
+import { getProducts } from '../services/productManager.js';
 
 const productRouter = Router();
+const router = express.Router();
 
+router.get('/', async (req, res) => {
+    try {
+        const products = await getProducts();
+        res.json(products);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error al obtener los productos' });
+    }
+});
 const handleErrors = (res, error, message) => {
     console.error(error);
     res.status(500).send(message);
@@ -76,3 +88,4 @@ productRouter.delete('/:productId', async (req, res) => {
 });
 
 export { productRouter };
+export default router;

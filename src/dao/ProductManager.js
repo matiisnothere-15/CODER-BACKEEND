@@ -1,5 +1,11 @@
 import fs  from "fs";
 import {v4 as uuidv4} from "uuid";
+import { Product } from './models.js';
+
+async function getProducts() {
+    return await Product.find();
+}
+
 
 export class ProductManager {
 
@@ -7,7 +13,7 @@ export class ProductManager {
             this.PATH = "./src/data/products.json";
             this.products = [];
         }; 
-
+        
 
     addProduct = async ({title, description, price, thumbnail, code, stock, status, category}) => { 
         const id = uuidv4()
@@ -69,3 +75,4 @@ export class ProductManager {
 
 
 }
+export { getProducts };

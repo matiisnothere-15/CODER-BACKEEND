@@ -12,9 +12,13 @@ import { Server } from "socket.io";
 
 const puerto = 8080;
 const app = express();
-
+const mongoURI = 'mongodb://localhost:27017/';
 export const productManager = new ProductManager;
 export const cartManager = new CartManager;
+
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Conexión a MongoDB establecida'))
+    .catch(err => console.error('Error de conexión a MongoDB:', err));
 
 // Middlewares
 app.use(express.json());

@@ -1,8 +1,4 @@
-/*
-socketClient.on("products", (data) => {
-    render(data);
-});
- */
+
 const socketClient = io();
 socketClient.on("sendProducts", (object)=>{
     updateProductsList(object)
@@ -43,12 +39,11 @@ productList.forEach(product => {
 productsDiv.innerHTML = productsHTML
 }
 
-////////agregar un producto///////////
 
 let form = document.getElementById("formProduct");
     form.addEventListener("submit", (e) => {
         e.preventDefault();
-    let title = form.elements.title.value;//esto vienen del name del formulario
+    let title = form.elements.title.value;
     let description = form.elements.description.value;
     let stock = form.elements.stock.value;
     let thumbnail = form.elements.thumbnail.value;
@@ -68,14 +63,14 @@ let form = document.getElementById("formProduct");
         status
     });
 
-form.reset();//esto es para que quede el formulario vacio
+form.reset();
 
 })
 
-////////eliminar  un producto///////////
-//elimino por ID
+
+
 document.getElementById("delete-id-btn").addEventListener('click', function(){
-    const inputTheId = document.getElementById("id-prod")//esto viene del form en realTimePrioducts.handlebars
+    const inputTheId = document.getElementById("id-prod")
    const deleteId = (inputTheId.value).toString();
    inputTheId.value = "";
    socketClient.emit("deleteProduct", deleteId)

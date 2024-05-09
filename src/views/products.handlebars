@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products</title>
+</head>
+<body>
+    <h1>Products</h1>
+    <div>
+        <ul>
+            {{#each payload}}
+                <li>{{this.title}} - Price: {{this.price}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    <div>
+        <nav>
+            <ul>
+                {{#if prevLink}}
+                    <li><a href="{{prevLink}}">Previous</a></li>
+                {{/if}}
+                {{#if nextLink}}
+                    <li><a href="{{nextLink}}">Next</a></li>
+                {{/if}}
+            </ul>
+        </nav>
+    </div>
+    <div>
+        <form action="/products" method="GET">
+            <input type="text" name="title" placeholder="Search by title">
+            <input type="text" name="category" placeholder="Search by category">
+            <input type="number" name="stock" placeholder="Search by stock">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+    <div>
+        <h2>Categories</h2>
+        <ul>
+            {{#each categories}}
+                <li>{{this}}</li>
+            {{/each}}
+        </ul>
+    </div>
+    <div>
+        <h2>Cart</h2>
+        <ul>
+            {{#each cart.items}}
+                <li>{{this.product.title}} - Quantity: {{this.quantity}}</li>
+            {{/each}}
+        </ul>
+    </div>
+</body>
+</html>

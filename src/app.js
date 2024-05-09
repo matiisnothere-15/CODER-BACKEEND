@@ -1,79 +1,79 @@
 import express from "express";
-import { ProductManager } from './dao/ProductManager.js';
-import { productRouter } from "./routes/products-router.js"
-import { CartManager } from "./dao/CartManager.js";
-import { cartsRouter } from "./routes/cart-router.js";
-import { router as vistasRouter } from './routes/vistas.router.js';
-import { errorHandler, middleware01, middleware02, middleware03 } from "./middleware/middleW01.js";
+import path from "path";
 import { engine } from "express-handlebars";
-import path from "path"; 
-import __dirname from "./utils.js"; 
 import { Server } from "socket.io";
+import mongoose from "mongoose";
+import { router as vistasRouter } from './routes/vistas.router.js';
+import { router as cartRouter } from './routes/cartRouter.js';
+import { router as productRouter } from './routes/productRouter.js';
+import { messageModelo } from "./dao/models/messageModelo.js";
+import { productsModelo } from "./dao/models/productsModelo.js";
 
-const puerto = 8080;
+const PORT = process.env.PORT || 8080;
 const app = express();
-const mongoURI = 'mongodb://localhost:27017/';
-export const productManager = new ProductManager;
-export const cartManager = new CartManager;
 
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Conexión a MongoDB establecida'))
-    .catch(err => console.error('Error de conexión a MongoDB:', err));
-
-// Middlewares
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-
-// Configuración de Handlebars
+// Configuración del motor de vistas Handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname,'/views'));
+app.set('views', path.join(process.cwd(), 'views'));
 
-// Contenido estático
-app.use(express.static(path.join(__dirname,'/public')));
+// Middleware para manejar datos JSON y URL codificados
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Middleware para servir archivos estáticos desde la carpeta 'public'
+app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Rutas
-app.use('/api/products', productRouter);
-app.use('/api/carts', cartsRouter);
 app.use('/', vistasRouter);
+app.use('/api/product', productRouter);
+app.use('/api/carts', cartRouter);
 
-// Ruta predeterminada
-app.use('/', (req, res) => {
-    res.setHeader('Content-Type', 'text/plain');
-    res.status(200).send("Todo Ok");
+// Manejo de usuarios conectados a través de Socket.IO
+let usuarios = [];
+const server = app.listen(PORT, () => {
+    console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
 
-// Middleware de manejo de errores
-app.use(errorHandler);
+export const io = new Server(server);
 
-// Escucha del servidor
-const serverHTTP = app.listen(puerto, () => console.log('Servidor andando en puerto ',  puerto));
-export const io = new Server(serverHTTP);
+io.on("connection", (socket) => {
+    console.log(`Se conectó el cliente ${socket.id}`);
 
-// Web sockets
-io.on("connection", async socket => {
-    socket.on("message", (message) => {
-        console.log(message);
+    socket.on("id", async (userName) => {
+        usuarios[socket.id] = userName;
+        let messages = await messageModelo.find();
+        socket.emit("previousMessages", messages);
+        socket.broadcast.emit("newUser", userName);
     });
 
-    console.log(`Se conectó un cliente con ID ${socket.id}`);
-
-    // Emitir lista de productos al cliente
-    const listOfProducts = await productManager.getProducts(); 
-    socket.emit('sendProducts', listOfProducts);
-
-    // Escuchar eventos de agregar producto
-    socket.on("addProduct", async (objeto) => {
-        await productManager.addProduct(objeto);
-        const updatedListOfProducts = await productManager.getProducts(); 
-        socket.emit('sendProducts', updatedListOfProducts);
+    socket.on("newMessage", async (userName, message) => {
+        await messageModelo.create({ user: userName, message: message });
+        io.emit("sendMessage", userName, message);
     });
 
-    // Escuchar eventos de eliminar producto
-    socket.on("deleteProduct", async (id) => {
-        console.log("Se recibió un evento para eliminar el producto con ID:", id);
-        await productManager.deleteProductById(id);
-        const updatedListOfProducts = await productManager.getProducts(); 
-        socket.emit('sendProducts', updatedListOfProducts);
+    socket.on("disconnect", () => {
+        const userName = usuarios[socket.id];
+        delete usuarios[socket.id];
+        if (userName) {
+            io.emit("userDisconnected", userName);
+        }
     });
 });
+
+// Conexión a la base de datos MongoDB
+const connDB = async () => {
+    try {
+        await mongoose.connect(
+            "mongodb+srv://matiisnothere:CoderCoder@cluster0.bqr5bqp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+            { dbName: "eCommerce" }
+        );
+        console.log("Mongoose activo");
+    } catch (error) {
+        console.error("Error al conectar a la base de datos:", error);
+    }
+};
+
+connDB(); // Llamar a la función para conectar a la base de datos
+
+export { app }; // Exportar app

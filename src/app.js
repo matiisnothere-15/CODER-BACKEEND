@@ -65,11 +65,9 @@ io.on("connection", (socket) => {
 const connDB = async () => {
     try {
         await mongoose.connect(
-            "mongodb+srv://akenocamiel:CoderCoder@cluster0.bqr5bqp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-            {
-                dbName: "eCommerce"
-            }
-        )
+            "mongodb+srv://matiisnothere:CoderCoder@cluster0.bqr5bqp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
+            { dbName: "eCommerce" }
+        );
         console.log("Mongoose activo")
 
         // let products = [

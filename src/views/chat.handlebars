@@ -1,12 +1,18 @@
-<h2>Chat con Websockets</h2>
-<hr>
-<input type="text" id="mensaje">
-<div id="mensajes"></div>
-
-<br><br>
-<a href="/">Home Page</a>
-
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="/socket.io/socket.io.js"></script>
-<script src="/assets/js/chat.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+</head>
+<body>
+    <h2>Chat</h2>
+    <div id="messages"></div>
+    <form id="chat-form">
+        <input type="text" id="message" placeholder="Escribe tu mensaje" required>
+        <button type="submit">Enviar</button>
+    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/assets/js/chat.js"></script>
+</body>
+</html>

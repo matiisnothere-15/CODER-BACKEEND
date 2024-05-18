@@ -6,7 +6,7 @@ import UserDAO from '../dao/UserDAO.js';
 
 const router = express.Router();
 
-// Configuración de Passport
+// Configuración Passport
 passport.use(new LocalStrategy({
     usernameField: 'email',
     passwordField: 'password'

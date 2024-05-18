@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import { engine } from "express-handlebars";
 import { Server } from "socket.io";
-import mongoose from "./config/db.js"; // Asegúrate de importar la conexión a MongoDB
+import mongoose from "./config/db.js";
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
@@ -73,6 +73,6 @@ const connDB = async () => {
     }
 };
 
-connDB(); // Llamar a la función para conectar a la base de datos
+connDB();
 
 export { app }; // Exportar app

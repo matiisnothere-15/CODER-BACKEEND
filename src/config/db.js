@@ -1,9 +1,16 @@
 import mongoose from 'mongoose';
 
-const mongoURI = 'mongodb://localhost:27017/ecommerce';
+const connectDB = async () => {
+    try {
+        await mongoose.connect('mongodb://localhost:27017/ecommerceDB', {
+            useNewUrlParser: true,
+            useUnifiedTopology: true
+        });
+        console.log('MongoDB connected...');
+    } catch (err) {
+        console.error(err.message);
+        process.exit(1);
+    }
+};
 
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('Conexión a MongoDB establecida'))
-    .catch(err => console.error('Error de conexión a MongoDB:', err));
-
-export default mongoose;
+export default connectDB;

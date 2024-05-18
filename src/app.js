@@ -2,14 +2,10 @@ import express from "express";
 import path from "path";
 import { engine } from "express-handlebars";
 import { Server } from "socket.io";
-import session from 'express-session';
-import passport from 'passport';
+import mongoose from "./config/db.js"; // Asegúrate de importar la conexión a MongoDB
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
-import { router as authRouter } from './routes/auth.js';
-import { initializePassport } from './config/passport.config.js'; // Import passport config
-import mongoose from './config/db.js'; // Importar la configuración de MongoDB
 import { messageModelo } from "./dao/models/messageModelo.js";
 
 const PORT = process.env.PORT || 8080;
@@ -27,23 +23,10 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware para servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Configuración de sesiones
-app.use(session({
-    secret: 'secretCoder',
-    resave: false,
-    saveUninitialized: false
-}));
-
-// Inicializar Passport
-initializePassport();
-app.use(passport.initialize());
-app.use(passport.session());
-
 // Rutas
 app.use('/', vistasRouter);
 app.use('/api/product', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/auth', authRouter); // Rutas de autenticación
 
 // Manejo de usuarios conectados a través de Socket.IO
 let usuarios = [];
@@ -76,5 +59,20 @@ io.on("connection", (socket) => {
         }
     });
 });
+
+// Conexión a la base de datos MongoDB
+const connDB = async () => {
+    try {
+        await mongoose.connect(
+            "mongodb+srv://<usuario>:<contraseña>@cluster0.mongodb.net/eCommerce?retryWrites=true&w=majority",
+            { useNewUrlParser: true, useUnifiedTopology: true, dbName: "eCommerce" }
+        );
+        console.log("Mongoose activo");
+    } catch (error) {
+        console.log("Error al conectar a DB", error.message);
+    }
+};
+
+connDB(); // Llamar a la función para conectar a la base de datos
 
 export { app }; // Exportar app

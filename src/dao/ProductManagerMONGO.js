@@ -1,59 +1,52 @@
 import { productsModelo } from './models/productsModelo.js';
 
-export default class ProductManager {
-    async getProducts() {
+class ProductManagerMongo {
+    async getAllProducts() {
         try {
-            return await productsModelo.find().lean();
+            return await productsModelo.find({});
         } catch (error) {
-            throw new Error(`Error al obtener productos: ${error}`);
+            console.error("Error al obtener productos:", error);
+            throw error;
         }
     }
 
-    async getProductsPaginate(filter, options) {
+    async getProductById(id) {
         try {
-            return await productsModelo.paginate(filter, options);
+            return await productsModelo.findById(id);
         } catch (error) {
-            throw new Error(`Error al obtener productos paginados: ${error}`);
+            console.error("Error al obtener producto:", error);
+            throw error;
         }
     }
 
-    async getSortProducts(sort) {
+    async addProduct(productData) {
         try {
-            return await productsModelo.find().sort({ [sort]: 1 }).lean();
+            const newProduct = new productsModelo(productData);
+            await newProduct.save();
+            return newProduct;
         } catch (error) {
-            throw new Error(`Error al obtener productos ordenados: ${error}`);
+            console.error("Error al agregar producto:", error);
+            throw error;
         }
     }
 
-    async addProduct(product) {
+    async updateProduct(id, productData) {
         try {
-            return await productsModelo.create(product);
+            return await productsModelo.findByIdAndUpdate(id, productData, { new: true });
         } catch (error) {
-            throw new Error(`Error al añadir producto: ${error}`);
-        }
-    }
-
-    async getProductsBy(filtro) {
-        try {
-            return await productsModelo.findOne(filtro).lean();
-        } catch (error) {
-            throw new Error(`Error al obtener producto por filtro: ${error}`);
-        }
-    }
-
-    async updateProduct(id, updateData) {
-        try {
-            return await productsModelo.findByIdAndUpdate(id, updateData, { runValidators: true, returnDocument: "after" });
-        } catch (error) {
-            throw new Error(`Error al actualizar producto: ${error}`);
+            console.error("Error al actualizar producto:", error);
+            throw error;
         }
     }
 
     async deleteProduct(id) {
         try {
-            return await productsModelo.deleteOne({ _id: id });
+            return await productsModelo.findByIdAndDelete(id);
         } catch (error) {
-            throw new Error(`Error al eliminar producto: ${error}`);
+            console.error("Error al eliminar producto:", error);
+            throw error;
         }
     }
 }
+
+export default ProductManagerMongo;

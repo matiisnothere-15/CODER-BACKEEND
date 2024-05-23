@@ -10,6 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.19.2"
+    "bcrypt": "^5.1.1",
+    "express": "^4.19.2",
+    "passport": "^0.7.0",
+    "passport-github": "^1.1.0",
+    "passport-local": "^1.0.0"
   }
 }

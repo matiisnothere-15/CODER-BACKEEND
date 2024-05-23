@@ -2,11 +2,14 @@ import express from "express";
 import path from "path";
 import { engine } from "express-handlebars";
 import { Server } from "socket.io";
+import session from "express-session";
+import passport from "passport";
 import mongoose from "./config/db.js";
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
 import { messageModelo } from "./dao/models/messageModelo.js";
+import './config/passport.config.js'; 
 
 const PORT = process.env.PORT || 8080;
 const app = express();
@@ -22,6 +25,17 @@ app.use(express.urlencoded({ extended: true }));
 
 // Middleware para servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Configuración de la sesión
+app.use(session({
+    secret: 'yourSecret', 
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Inicializar Passport y la sesión de Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Rutas
 app.use('/', vistasRouter);

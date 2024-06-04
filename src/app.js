@@ -9,6 +9,9 @@ import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
 import { messageModelo } from "./dao/models/messageModelo.js";
+import authRouter from './routes/auth.js'; 
+import sessionRouter from './routes/session.js';
+import cookieParser from 'cookie-parser';
 import './config/passport.config.js'; 
 
 const PORT = process.env.PORT || 8080;
@@ -22,8 +25,7 @@ app.set('views', path.join(process.cwd(), 'views'));
 // Middleware para manejar datos JSON y URL codificados
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Middleware para servir archivos estáticos desde la carpeta 'public'
+app.use(cookieParser()); 
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Configuración de la sesión
@@ -34,6 +36,8 @@ app.use(session({
 }));
 
 // Inicializar Passport y la sesión de Passport
+import { initializePassport } from './config/passport.config.js';
+initializePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -41,6 +45,8 @@ app.use(passport.session());
 app.use('/', vistasRouter);
 app.use('/api/product', productRouter);
 app.use('/api/carts', cartRouter);
+app.use('/api/auth', authRouter); 
+app.use('/api/sessions', sessionRouter);
 
 // Manejo de usuarios conectados a través de Socket.IO
 let usuarios = [];

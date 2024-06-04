@@ -1,47 +1,32 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
+    first_name: { type: String, required: true },
+    last_name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    age: { type: Number, required: true },
     password: { type: String, required: true },
+    cart: { type: mongoose.Schema.Types.ObjectId, ref: 'Cart' },
     role: { type: String, default: 'user' }
 });
 
+// Hash the password before saving the user
+userSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) {
+        return next();
+    }
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+});
+
+// Method to compare password
+userSchema.methods.matchPassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
+};
+
 const User = mongoose.model('User', userSchema);
 
-class UserDAO {
-    async createUser(email, password) {
-        const user = new User({ email, password });
-        await user.save();
-        return user;
-    }
+module.exports = User;
 
-    async findUserByEmail(email) {
-        return User.findOne({ email });
-    }
-
-    async findUserById(id) {
-        return User.findById(id);
-    }
-}
-
-userSchema.pre('save', function(next) {
-    if (this.isModified('password') || this.isNew) {
-      bcrypt.hash(this.password, SALT_ROUNDS, (err, hash) => {
-        if (err) return next(err);
-        this.password = hash;
-        next();
-      });
-    } else {
-      return next();
-    }
-  });
-  
-  // Método para comparar contraseñas
-  userSchema.methods.comparePassword = function(candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err, isMatch) => {
-      if (err) return cb(err);
-      cb(null, isMatch);
-    });
-  };
-
-export default new UserDAO();

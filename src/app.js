@@ -13,8 +13,8 @@ import authRouter from './routes/auth.js';
 import sessionRouter from './routes/session.js';
 import cookieParser from 'cookie-parser';
 import './config/passport.config.js'; 
+import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js'; // Importar configuración
 
-const PORT = process.env.PORT || 8080;
 const app = express();
 
 // Configuración del motor de vistas Handlebars
@@ -30,7 +30,7 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Configuración de la sesión
 app.use(session({
-    secret: 'yourSecret', 
+    secret: SESSION_SECRET, // Usar variable de entorno
     resave: false,
     saveUninitialized: false
 }));
@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
 const connDB = async () => {
     try {
         await mongoose.connect(
-            "mongodb+srv://<usuario>:<contraseña>@cluster0.mongodb.net/eCommerce?retryWrites=true&w=majority",
+            DB_CONNECTION_STRING, // Usar variable de entorno
             { useNewUrlParser: true, useUnifiedTopology: true, dbName: "eCommerce" }
         );
         console.log("Mongoose activo");

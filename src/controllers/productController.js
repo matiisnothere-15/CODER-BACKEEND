@@ -1,57 +1,61 @@
-import ProductManagerMongo from '../dao/ProductManagerMongo.js';
+import DAOFactory from '../dao/DAOFactory.js';
+import ProductRepository from '../repositories/ProductRepository.js';
 
-const productManager = new ProductManagerMongo();
+const daoType = process.argv[2] || 'MONGO'; // Usar 'MONGO' por defecto si no se pasa argumento
+const productDAO = DAOFactory.getDAO(daoType);
+const productRepository = new ProductRepository(productDAO);
 
+// Controladores para productos
 export const getAllProducts = async (req, res) => {
-    try {
-        const products = await productManager.getAllProducts();
-        res.json(products);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+  try {
+    const products = await productRepository.getAllProducts();
+    res.json(products);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 export const getProductById = async (req, res) => {
-    try {
-        const product = await productManager.getProductById(req.params.id);
-        if (!product) {
-            return res.status(404).json({ message: 'Producto no encontrado' });
-        }
-        res.json(product);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const product = await productRepository.getProductById(req.params.id);
+    if (!product) {
+      return res.status(404).send('Product not found');
     }
+    res.json(product);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
-export const addProduct = async (req, res) => {
-    try {
-        const newProduct = await productManager.addProduct(req.body);
-        res.status(201).json(newProduct);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+export const createProduct = async (req, res) => {
+  try {
+    const newProduct = await productRepository.createProduct(req.body);
+    res.status(201).json(newProduct);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 export const updateProduct = async (req, res) => {
-    try {
-        const updatedProduct = await productManager.updateProduct(req.params.id, req.body);
-        if (!updatedProduct) {
-            return res.status(404).json({ message: 'Producto no encontrado' });
-        }
-        res.json(updatedProduct);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const updatedProduct = await productRepository.updateProduct(req.params.id, req.body);
+    if (!updatedProduct) {
+      return res.status(404).send('Product not found');
     }
+    res.json(updatedProduct);
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };
 
 export const deleteProduct = async (req, res) => {
-    try {
-        const deletedProduct = await productManager.deleteProduct(req.params.id);
-        if (!deletedProduct) {
-            return res.status(404).json({ message: 'Producto no encontrado' });
-        }
-        res.json(deletedProduct);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+  try {
+    const deletedProduct = await productRepository.deleteProduct(req.params.id);
+    if (!deletedProduct) {
+      return res.status(404).send('Product not found');
     }
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).send(err.message);
+  }
 };

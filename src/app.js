@@ -1,19 +1,19 @@
-import express from "express";
-import path from "path";
-import { engine } from "express-handlebars";
-import { Server } from "socket.io";
-import session from "express-session";
-import passport from "passport";
-import mongoose from "./config/db.js";
+import express from 'express';
+import path from 'path';
+import { engine } from 'express-handlebars';
+import { Server } from 'socket.io';
+import session from 'express-session';
+import passport from 'passport';
+import mongoose from './config/db.js';
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
-import { messageModelo } from "./dao/models/messageModelo.js";
+import { messageModelo } from './dao/models/messageModelo.js';
 import authRouter from './routes/auth.js'; 
 import sessionRouter from './routes/session.js';
 import cookieParser from 'cookie-parser';
 import './config/passport.config.js'; 
-import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js'; // Importar configuración
+import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js'; 
 
 const app = express();
 
@@ -30,7 +30,7 @@ app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Configuración de la sesión
 app.use(session({
-    secret: SESSION_SECRET, // Usar variable de entorno
+    secret: SESSION_SECRET, 
     resave: false,
     saveUninitialized: false
 }));
@@ -43,7 +43,7 @@ app.use(passport.session());
 
 // Rutas
 app.use('/', vistasRouter);
-app.use('/api/product', productRouter);
+app.use('/api/products', productRouter); 
 app.use('/api/carts', cartRouter);
 app.use('/api/auth', authRouter); 
 app.use('/api/sessions', sessionRouter);
@@ -84,7 +84,7 @@ io.on("connection", (socket) => {
 const connDB = async () => {
     try {
         await mongoose.connect(
-            DB_CONNECTION_STRING, // Usar variable de entorno
+            DB_CONNECTION_STRING, 
             { useNewUrlParser: true, useUnifiedTopology: true, dbName: "eCommerce" }
         );
         console.log("Mongoose activo");

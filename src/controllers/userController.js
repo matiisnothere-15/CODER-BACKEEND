@@ -10,3 +10,4 @@ export const getCurrentUser = (req, res) => {
     res.json(userDTO);
   };
   
+  

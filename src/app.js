@@ -1,4 +1,3 @@
-
 import express from 'express';
 import path from 'path';
 import { engine } from 'express-handlebars';
@@ -9,6 +8,7 @@ import mongoose from './config/db.js';
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
+import userRouter from './routes/userRouter.js';  // Importa el enrutador de usuario
 import { messageModelo } from './dao/models/messageModelo.js';
 import authRouter from './routes/auth.js';
 import sessionRouter from './routes/session.js';
@@ -16,6 +16,7 @@ import cookieParser from 'cookie-parser';
 import './config/passport.config.js';
 import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js';
 import generateMockProducts from './mocking.js';
+import errorHandler from './middleware/errorHandler.js'; // Importa el manejador de errores
 
 const app = express();
 
@@ -49,6 +50,7 @@ app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/sessions', sessionRouter);
+app.use('/api/usuarios', userRouter);  // Middleware para el enrutador de usuario
 
 // Endpoint for mocking products
 app.get('/mockingproducts', (req, res) => {
@@ -103,4 +105,7 @@ const connDB = async () => {
 
 connDB();
 
-export { app }; // Exportar app
+// Middleware de manejo de errores (al final)
+app.use(errorHandler);
+
+export { app }; 

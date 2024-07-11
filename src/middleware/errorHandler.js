@@ -14,12 +14,10 @@ const errorDictionary = {
     // Add more error types as needed
   };
   
+
   const errorHandler = (err, req, res, next) => {
-    const error = errorDictionary[err.message] || {
-      status: 500,
-      message: 'Internal Server Error',
-    };
-    res.status(error.status).json({ error: error.message });
+      console.error(err.stack);
+      res.status(500).json({ message: 'Internal Server Error', error: err.message });
   };
   
   module.exports = errorHandler;

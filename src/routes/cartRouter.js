@@ -6,7 +6,14 @@ import ProductManager from '../dao/ProductManagerMONGO.js';
 export const router = Router();
 const cartManager = new CartManager();
 const productManager = new ProductManager();
+const express = require('express');
+const router = express.Router();
+const CartController = require('../controllers/cartController');
+const { authorizeUser } = require('../middleware/authorization');
 
+router.post('/:cid/purchase', authorizeUser, CartController.purchase);
+
+module.exports = router;
 router.get('/', async (req, res) => {
     try {
         res.setHeader('Content-Type', 'application/json')

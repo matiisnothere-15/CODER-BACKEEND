@@ -8,7 +8,7 @@ import mongoose from './config/db.js';
 import { router as vistasRouter } from './routes/vistas.router.js';
 import { router as cartRouter } from './routes/cartRouter.js';
 import { router as productRouter } from './routes/productRouter.js';
-import userRouter from './routes/userRouter.js';  // Importa el enrutador de usuario
+import userRouter from './routes/userRouter.js';
 import { messageModelo } from './dao/models/messageModelo.js';
 import authRouter from './routes/auth.js';
 import sessionRouter from './routes/session.js';
@@ -16,7 +16,8 @@ import cookieParser from 'cookie-parser';
 import './config/passport.config.js';
 import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js';
 import generateMockProducts from './mocking.js';
-import errorHandler from './middleware/errorHandler.js'; // Importa el manejador de errores
+import errorHandler from './middleware/errorHandler.js';
+import logger from './config/logger.js'; // Importa el logger
 
 const app = express();
 
@@ -48,9 +49,10 @@ app.use(passport.session());
 app.use('/', vistasRouter);
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/api/auth', authRouter);
-app.use('/api/sessions', sessionRouter);
-app.use('/api/usuarios', userRouter);  // Middleware para el enrutador de usuario
+app.use('/api/users', userRouter);  
+app.use('/auth', authRouter);
+app.use('/session', sessionRouter);
+
 
 // Endpoint for mocking products
 app.get('/mockingproducts', (req, res) => {
@@ -61,13 +63,13 @@ app.get('/mockingproducts', (req, res) => {
 // Manejo de usuarios conectados a través de Socket.IO
 let usuarios = [];
 const server = app.listen(PORT, () => {
-    console.log(`Servidor escuchando en el puerto ${PORT}`);
+    logger.info(`Servidor escuchando en el puerto ${PORT}`); 
 });
 
 export const io = new Server(server);
 
 io.on("connection", (socket) => {
-    console.log(`Se conectó el cliente ${socket.id}`);
+    logger.info(`Se conectó el cliente ${socket.id}`); 
 
     socket.on("id", async (userName) => {
         usuarios[socket.id] = userName;
@@ -97,15 +99,26 @@ const connDB = async () => {
             DB_CONNECTION_STRING,
             { useNewUrlParser: true, useUnifiedTopology: true, dbName: "eCommerce" }
         );
-        console.log("Mongoose activo");
+        logger.info("Mongoose conectado");  
     } catch (error) {
-        console.log("Error al conectar a DB", error.message);
+        logger.error("Error al conectar a MongoDB", error);  
     }
 };
 
 connDB();
 
+
 // Middleware de manejo de errores (al final)
 app.use(errorHandler);
 
+// Endpoint for testing the logger
+app.get('/loggerTest', (req, res) => {
+    logger.debug('Debug log');
+    logger.http('HTTP log');
+    logger.info('Info log');
+    logger.warn('Warning log');
+    logger.error('Error log');
+    logger.fatal('Fatal log');
+    res.send('Logs probados!');
+});
 export { app }; 

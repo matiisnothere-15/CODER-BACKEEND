@@ -8,7 +8,12 @@ const productSchema = new mongoose.Schema({
     code: { type: String, required: true, unique: true },
     stock: { type: Number, required: true },
     category: { type: String, required: true },
-    status: { type: String, required: true }
+    status: { type: String, required: true },
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: 'admin' 
+    }
 });
 
 export const productsModelo = mongoose.model('Product', productSchema);

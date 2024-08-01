@@ -17,7 +17,10 @@ import './config/passport.config.js';
 import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js';
 import generateMockProducts from './mocking.js';
 import errorHandler from './middleware/errorHandler.js';
-import logger from './config/logger.js'; // Importa el logger
+import logger from './config/logger.js';
+
+// Integración de Swagger
+const swaggerApp = require('./src/swagger');
 
 const app = express();
 
@@ -26,20 +29,21 @@ app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
 app.set('views', path.join(process.cwd(), 'views'));
 
-// Middleware para manejar datos JSON y URL codificados
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(process.cwd(), 'public')));
-
-// Configuración de la sesión
-app.use(session({
+app.use(session({ 
     secret: SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false 
 }));
 
-// Inicializar Passport y la sesión de Passport
+// Middleware de Swagger 
+app.use(swaggerApp);
+
+// Inicialización de Passport
 import { initializePassport } from './config/passport.config.js';
 initializePassport();
 app.use(passport.initialize());
@@ -49,12 +53,11 @@ app.use(passport.session());
 app.use('/', vistasRouter);
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/api/users', userRouter);  
+app.use('/api/users', userRouter); 
 app.use('/auth', authRouter);
 app.use('/session', sessionRouter);
 
-
-// Endpoint for mocking products
+// Endpoint para generar productos de prueba
 app.get('/mockingproducts', (req, res) => {
     const products = generateMockProducts();
     res.json(products);
@@ -107,11 +110,10 @@ const connDB = async () => {
 
 connDB();
 
-
-// Middleware de manejo de errores (al final)
+// Middleware de manejo de errores 
 app.use(errorHandler);
 
-// Endpoint for testing the logger
+// Endpoint para probar el logger
 app.get('/loggerTest', (req, res) => {
     logger.debug('Debug log');
     logger.http('HTTP log');
@@ -121,4 +123,5 @@ app.get('/loggerTest', (req, res) => {
     logger.fatal('Fatal log');
     res.send('Logs probados!');
 });
-export { app }; 
+
+export { app };

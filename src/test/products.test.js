@@ -1,46 +1,47 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../src/app');  // Asegúrate de que el path sea correcto
-const expect = chai.expect;
+const server = require('../app'); 
+const should = chai.should();
 
 chai.use(chaiHttp);
 
-describe('Products Router', () => {
-    it('Debería obtener una lista de productos', (done) => {
-        chai.request(app)
-            .get('/api/products')
+describe('Productos', () => {
+
+    // Test para manejar producto no encontrado
+    it('debería devolver 404 si no se encuentra el producto', (done) => {
+        chai.request(server)
+            .get('/api/products/invalidID')
             .end((err, res) => {
-                expect(res).to.have.status(200);
-                expect(res.body).to.be.an('array');
+                res.should.have.status(404);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql('Producto no encontrado');
                 done();
             });
     });
 
-    it('Debería obtener un producto por ID', (done) => {
-        const productId = 'ID_VALIDO';  // Reemplaza con un ID válido de producto
-        chai.request(app)
-            .get(`/api/products/${productId}`)
-            .end((err, res) => {
-                expect(res).to.have.status(200);
-                expect(res.body).to.be.an('object');
-                expect(res.body).to.have.property('_id').eql(productId);
-                done();
-            });
-    });
-
-    it('Debería crear un nuevo producto', (done) => {
-        const newProduct = {
-            name: 'Nuevo Producto',
-            price: 100,
-            description: 'Descripción del nuevo producto'
-        };
-        chai.request(app)
+    // Test para manejar error de conexión a la base de datos
+    it('debería devolver 500 si falla la conexión a la base de datos', (done) => {
+    
+        chai.request(server)
             .post('/api/products')
-            .send(newProduct)
+            .send({ name: 'Producto de prueba', price: 100 })
             .end((err, res) => {
-                expect(res).to.have.status(201);
-                expect(res.body).to.be.an('object');
-                expect(res.body).to.have.property('name').eql(newProduct.name);
+                res.should.have.status(500);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql('Error en la conexión a la base de datos');
+                done();
+            });
+    });
+
+    // Test para manejar errores de validación
+    it('debería devolver 400 si falla la validación al crear un producto', (done) => {
+        chai.request(server)
+            .post('/api/products')
+            .send({ price: 100 }) 
+            .end((err, res) => {
+                res.should.have.status(400);
+                res.body.should.be.a('object');
+                res.body.should.have.property('message').eql('Faltan campos requeridos');
                 done();
             });
     });

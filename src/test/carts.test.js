@@ -7,7 +7,7 @@ chai.use(chaiHttp);
 
 describe('Carts Router', () => {
     it('Debería obtener el carrito por ID', (done) => {
-        const cartId = 'ID_VALIDO';  // Reemplaza con un ID válido de carrito
+        const cartId = 'ID_VALIDO';  
         chai.request(app)
             .get(`/api/carts/${cartId}`)
             .end((err, res) => {

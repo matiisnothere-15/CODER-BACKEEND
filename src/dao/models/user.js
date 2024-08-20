@@ -12,9 +12,18 @@ const userSchema = new mongoose.Schema({
     premium: {
         type: Boolean,
         default: false
-    } 
+    },
+    // Additional fields from the other snippet
+    documents: [
+        {
+            name: String,
+            reference: String
+        }
+    ],
+    last_connection: Date 
 });
 
+// Password hashing pre-save hook
 userSchema.pre('save', async function (next) {
     if (!this.isModified('password')) { 
         return next();
@@ -24,6 +33,15 @@ userSchema.pre('save', async function (next) {
     next(); 
 });
 
+// Update last_connection pre-save hook
+userSchema.pre('save', function (next) {
+    if (this.isModified('last_connection')) {
+        this.last_connection = new Date();
+    }
+    next();
+});
+
+// Password comparison method
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 };

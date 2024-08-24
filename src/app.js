@@ -18,14 +18,13 @@ import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js';
 import generateMockProducts from './mocking.js';
 import errorHandler from './middleware/errorHandler.js';
 import logger from './config/logger.js';
-
+import paymentRoutes from './routes/paymentRoutes.js'; // Importa las rutas de pago
 
 // Integración de Swagger
 const swaggerApp = require('./src/swagger');
 
-const express = require('express');
 const app = express();
-const userRoutes = require('./routes/userRoutes');
+
 // Configuración del motor de vistas Handlebars
 app.engine('handlebars', engine());
 app.set('view engine', 'handlebars');
@@ -52,13 +51,13 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Rutas
-app.use('/api/users', userRoutes);
+app.use('/api/users', userRouter);
 app.use('/', vistasRouter);
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
-app.use('/api/users', userRouter); 
 app.use('/auth', authRouter);
 app.use('/session', sessionRouter);
+app.use('/api/payments', paymentRoutes); 
 
 // Endpoint para generar productos de prueba
 app.get('/mockingproducts', (req, res) => {

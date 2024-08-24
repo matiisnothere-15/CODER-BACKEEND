@@ -1,4 +1,58 @@
 const User = require('../models/User'); // Asegúrate de que el modelo de usuario esté bien importado
+const nodemailer = require('nodemailer');
+
+// Función para obtener todos los usuarios
+exports.getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({}, 'name email role'); // Selecciona solo los campos principales
+        res.status(200).json(users);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener usuarios', error });
+    }
+};
+
+// Función para eliminar usuarios inactivos
+exports.deleteInactiveUsers = async (req, res) => {
+    try {
+        const cutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 días
+        const inactiveUsers = await User.find({ lastLogin: { $lt: cutoff } });
+        
+        inactiveUsers.forEach(async (user) => {
+            await User.findByIdAndDelete(user._id);
+            sendDeletionEmail(user.email);
+        });
+
+        res.status(200).json({ message: 'Usuarios inactivos eliminados y correos enviados' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al eliminar usuarios inactivos', error });
+    }
+};
+
+// Función para enviar correo de eliminación
+function sendDeletionEmail(email) {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'tu-correo@gmail.com',
+            pass: 'tu-contraseña'
+        }
+    });
+
+    const mailOptions = {
+        from: 'tu-correo@gmail.com',
+        to: email,
+        subject: 'Cuenta eliminada por inactividad',
+        text: 'Tu cuenta ha sido eliminada debido a inactividad. Si crees que esto es un error, por favor contacta con soporte.'
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}
 
 // Función para actualizar a premium
 exports.updateUserToPremium = async (req, res) => {

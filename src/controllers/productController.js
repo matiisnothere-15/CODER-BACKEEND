@@ -1,6 +1,7 @@
 import DAOFactory from '../dao/DAOFactory.js';
 import ProductRepository from '../repositories/ProductRepository.js';
 import User from '../dao/models/user.js'; 
+import nodemailer from 'nodemailer';
 
 const daoType = process.argv[2] || 'MONGO';
 const productDAO = DAOFactory.getDAO(daoType);
@@ -66,14 +67,45 @@ export const deleteProduct = async (req, res) => {
             return res.status(404).send('Product not found');
         }
 
-
         if (user.role !== 'admin' && !product.owner.equals(userId)) {
-            return res.status(403).send('You do not have permission to delete this product');
+            return res.status(403).send('No autorizado para eliminar este producto');
         }
 
-        await productRepository.deleteProduct(productId); 
-        res.send('Product deleted');
-    } catch (error) {
-        res.status(500).send('Server error');
+        await productRepository.deleteProduct(productId);
+
+        // Si el usuario es premium, enviarle un correo notificando la eliminación del producto
+        if (user.premium) {
+            sendProductDeletionEmail(user.email, product.name);
+        }
+
+        res.status(200).send('Producto eliminado correctamente');
+    } catch (err) {
+        res.status(500).send(err.message);
     }
 };
+
+// Función para enviar correo de notificación al eliminar un producto
+function sendProductDeletionEmail(email, productName) {
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: 'tu-correo@gmail.com',
+            pass: 'tu-contraseña'
+        }
+    });
+
+    const mailOptions = {
+        from: 'tu-correo@gmail.com',
+        to: email,
+        subject: 'Producto eliminado',
+        text: `El producto "${productName}" ha sido eliminado de tu cuenta.`
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log('Correo enviado: ' + info.response);
+        }
+    });
+}

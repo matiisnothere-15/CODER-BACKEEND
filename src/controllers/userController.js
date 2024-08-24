@@ -100,3 +100,21 @@ exports.uploadDocuments = async (req, res) => {
         res.status(500).json({ message: 'Error al subir documentos', error });
     }
 };
+
+
+// Función para eliminar usuarios inactivos
+exports.deleteInactiveUsers = async (req, res) => {
+    try {
+        const cutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000); // 2 días
+        const inactiveUsers = await User.find({ lastLogin: { $lt: cutoff } });
+        
+        for (let user of inactiveUsers) {
+            await User.findByIdAndDelete(user._id);
+            sendDeletionEmail(user.email);
+        }
+
+        res.status(200).json({ message: 'Usuarios inactivos eliminados y correos enviados' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error al eliminar usuarios inactivos', error });
+    }
+};

@@ -1,0 +1,68 @@
+
+<section class="carts">
+    <header class="carts-title">
+        <h3>Lista de productos de Carrito de {{userDTO.nombre}}</h3>
+    </header>
+        {{#each carrito.products}}
+    <div>
+        <h4>Nombre del producto: {{this.id.title}}</h4>
+        <p>Detalles: {{this.id.description}}</p>
+        <p>Precio: {{this.id.price}}</p>
+        <p>Cantidad: {{this.quantity}}</p>
+        <button onclick="deleteProductInCart('{{this.id._id}}')" class="ruta">Eliminar producto</button>
+    </div>
+    {{/each}}
+    <button onclick="purchase('{{userDTO.cart}}')" class="ruta">Confirmar compra</button>
+    <a href="/products" class="ruta">Volver a productos</a>
+    <a  href="/api/sessions/logout" class="ruta">Cerrar sesión</a>
+</section>
+
+<script>
+    async function deleteProductInCart(productId) {
+    const cartId = "{{userDTO.cart}}";
+    
+    try {
+        const response = await fetch(`/api/carts/${cartId}/products/${productId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            alert('producto eliminado exitosamente');
+            location.reload();
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.msg}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor.');
+    }
+}
+
+async function purchase(cartId) {
+    const email = "{{userDTO.email}}";
+    try {
+        const response = await fetch(`/api/carts/${cartId}/purchase`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            alert(`Compra exitosa y correo de confirmación enviado a ${email}`, );
+            location.reload();
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.msg}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor. ESTE ES EL ERROR');
+        location.reload();
+    }
+}
+</script>

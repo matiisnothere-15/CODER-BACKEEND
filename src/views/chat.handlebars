@@ -1,18 +1,19 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
-</head>
-<body>
-    <h2>Chat</h2>
-    <div id="messages"></div>
-    <form id="chat-form">
-        <input type="text" id="message" placeholder="Escribe tu mensaje" required>
-        <button type="submit">Enviar</button>
-    </form>
-    <script src="/socket.io/socket.io.js"></script>
-    <script src="/assets/js/chat.js"></script>
-</body>
-</html>
+<section class="chat-web">
+
+    <h2>Chat con Websockets</h2>
+<hr>
+
+<div>
+    <div id="messageLogs" class="messagelogsclass"></div>
+    <input id="chatBox" placeholder="Envia un mensaje">
+    <button id="delete-btn">Eliminar historial de chat</button>
+</div>
+
+<br><br>
+<a href="/" class="ruta">Home Page</a>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/chat.js"></script>
+</section>

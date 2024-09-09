@@ -1,54 +1,78 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Products</title>
-</head>
-<body>
-    <h1>Products</h1>
-    <div>
-        <ul>
-            {{#each payload}}
-                <li>{{this.title}} - Price: {{this.price}}</li>
+<section class="products-content">
+    <h3>Lista de productos:</h3>
+    <a href="/cart/{{userDTO.cart}}" class="ruta">Ir al carrito</a>
+    
+    <a  href="/api/sessions/logout" class="ruta">Cerrar sesión</a>
+        <section class="cards-section">
+            {{#each result.payload}}
+            <x-card>
+                <div>
+                    <p><b>Producto:</b> {{this.id}}</p>
+                    <p><b>Producto:</b> {{this._id}}</p>
+                    <p><b>Producto:</b> {{this.title}}</p>
+                    <p><b>Descripción:</b> {{this.description}}</p>
+                    <p><b>Precio:</b> {{this.price}}</p>
+                    <p><b>Codigo:</b> {{this.code}}</p>
+                    <p><b>Stock:</b> {{this.stock}}</p>
+                    <p><b>Categoria:</b> {{this.category}}</p>
+                    <p><b>Estado:</b> {{#if this.status}}Activo{{else}}Desactivado{{/if}}</p>
+                    <p>
+                        {{#if this.thumbnails.length}}
+                        <a href="{{this.thumbnails.[0]}}" target="_blank">{{this.thumbnails.[0]}}</a>
+                        {{else}}
+                        No hay Imagen
+                        {{/if}}
+                    </p>
+                    <button onclick="addToCart('{{this._id}}')" class="ruta">Agregar al carrito</button>
+
+                    
+                </div>
+            </x-card>
             {{/each}}
-        </ul>
-    </div>
-    <div>
-        <nav>
-            <ul>
-                {{#if prevLink}}
-                    <li><a href="{{prevLink}}">Previous</a></li>
-                {{/if}}
-                {{#if nextLink}}
-                    <li><a href="{{nextLink}}">Next</a></li>
-                {{/if}}
-            </ul>
-        </nav>
-    </div>
-    <div>
-        <form action="/products" method="GET">
-            <input type="text" name="title" placeholder="Search by title">
-            <input type="text" name="category" placeholder="Search by category">
-            <input type="number" name="stock" placeholder="Search by stock">
-            <button type="submit">Search</button>
-        </form>
-    </div>
-    <div>
-        <h2>Categories</h2>
-        <ul>
-            {{#each categories}}
-                <li>{{this}}</li>
-            {{/each}}
-        </ul>
-    </div>
-    <div>
-        <h2>Cart</h2>
-        <ul>
-            {{#each cart.items}}
-                <li>{{this.product.title}} - Quantity: {{this.quantity}}</li>
-            {{/each}}
-        </ul>
-    </div>
-</body>
-</html>
+        </section>
+    
+    <script>
+        async function addToCart(productId) {
+    const cartId = "{{userDTO.cart}}";  
+
+    try {
+        const response = await fetch(`/api/carts/${cartId}/product/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            alert('Producto agregado al carrito!');
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.msg}`);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error al conectar con el servidor.');
+    }
+}
+    </script>
+    
+
+    <section class="pagination">
+        <span>Limite por página: {{result.limit}}</span>
+        {{#if result.query}}
+        <span>Filtrado por: {{result.query}}</span>
+        {{else}}
+        Nada
+        {{/if}}
+        
+        {{#if result.hasPrevPage}}
+        <a class="ruta" href="?page={{result.prevPage}}&limit={{result.limit}}{{#if result.query}}&query={{result.query}}{{/if}}">Página Anterior</a>
+        {{/if}}
+
+        <span>Página {{result.page}} de {{result.totalPages}}</span>
+
+        {{#if result.hasNextPage}}
+        <a class="ruta" href="?page={{result.nextPage}}&limit={{result.limit}}{{#if result.query}}&query={{result.query}}{{/if}}">Página Siguiente</a>
+        {{/if}}
+    </section>
+</section>

@@ -1,0 +1,73 @@
+<section class="realtimeproducts">
+    <h2>Real time products</h2>
+
+    <h3>Lista de productos</h3>
+    <div><a href="/" >Enlace a Inicio</a>
+        <a  href="/api/sessions/logout">LOG OUT</a>
+    </div>
+
+
+    <table>
+        <thead>
+            <th>Id</th>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Precio </th>
+            <th>Código </th>
+            <th>Stock </th>
+            <th>Category </th>
+            <th>Status </th>
+            <th>Imagen </th>
+        </thead>
+        <tbody id="productos-body"></tbody>
+    </table>
+
+
+    <h3>Agregar productos</h3>
+
+    <section class="formulario">
+
+        <form id="producto-form">
+            <div>
+                <label for="titulo">Título:</label>
+                <input type="text" id="titulo" name="titulo" />
+            </div>
+            <div>
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion"></textarea>
+            </div>
+            <div>
+                <label for="precio">Precio:</label>
+                <input type="number" id="precio" name="precio" step="0.01" />
+            </div>
+            <div>
+                <label for="codigo">Código:</label>
+                <input type="text" id="codigo" name="codigo" />
+            </div>
+            <div>
+                <label for="stock">Stock:</label>
+                <input type="number" id="stock" name="stock" />
+            </div>
+            <div>
+                <label for="categoria">Categoría:</label>
+                <input type="text" id="categoria" name="categoria" />
+
+            </div>
+            <div>
+                <button type="submit" class="ruta">Agregar producto</button>
+            </div>
+        </form>
+
+        <button id="delete-product-btn" class="ruta">Eliminar Productos</button>
+
+
+    </section>
+
+
+
+</section>
+
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/index.js"></script>

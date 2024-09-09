@@ -1,129 +1,159 @@
-import express from 'express';
-import path from 'path';
-import { engine } from 'express-handlebars';
+import express from "express";
+import { engine } from "express-handlebars";
 import { Server } from 'socket.io';
-import session from 'express-session';
-import passport from 'passport';
-import mongoose from './config/db.js';
-import { router as vistasRouter } from './routes/vistas.router.js';
-import { router as cartRouter } from './routes/cartRouter.js';
-import { router as productRouter } from './routes/productRouter.js';
-import userRouter from './routes/userRouter.js';
-import { messageModelo } from './dao/models/messageModelo.js';
-import authRouter from './routes/auth.js';
-import sessionRouter from './routes/session.js';
-import cookieParser from 'cookie-parser';
-import './config/passport.config.js';
-import { PORT, SESSION_SECRET, DB_CONNECTION_STRING } from './config/config.js';
-import generateMockProducts from './mocking.js';
-import errorHandler from './middleware/errorHandler.js';
-import logger from './config/logger.js';
-import paymentRoutes from './routes/paymentRoutes.js'; // Importa las rutas de pago
-
-// Integración de Swagger
-const swaggerApp = require('./src/swagger');
+import loggerTestRouter from './routers/loggerTest.js';
+import resetPasswordRouter from './routers/resetPassword.js';
+import productsRouter from "./routers/products.js";
+import cartsRouter from "./routers/carts.js";
+import views from "./routers/views.js";
+import sessionsRouter from "./routers/sessions.js";
+import __dirname from "./utils.js";
+import path from "path";
+import sessions from 'express-session';
+import { dbConnection } from "./database/config.js";
+import { messageModel } from "./dao/models/messages.js";
+import { addProductService, getProductsService } from "./services/productsManagerDBService.js";
+import { auth } from "./middleware/auth.js";
+import { initPassport } from "./config/passport.config.js";
+import passport from "passport";
+import { config } from "./config/config.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import loggerMiddleware from "./middleware/loggerMiddleware.js";
+import logger from "./config/logger.js";
+import swaggerJSDoc from "swagger-jsdoc";
+import swaggerUI from "swagger-ui-express";
 
 const app = express();
+const PORT = config.PORT;
 
-// Configuración del motor de vistas Handlebars
-app.engine('handlebars', engine());
-app.set('view engine', 'handlebars');
-app.set('views', path.join(process.cwd(), 'views'));
+// Middleware para logging de las solicitudes
+app.use(loggerMiddleware);
 
-// Middleware
+// Middleware para parsear JSON y datos codificados en URL
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use(express.static(path.join(process.cwd(), 'public')));
-app.use(session({ 
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false 
+
+// Servir archivos estáticos desde el directorio 'public'
+app.use(express.static('public'));
+
+// Configuración de la sesión
+app.use(sessions({
+    secret: config.SECRET,
+    resave: true,
+    saveUninitialized: true
 }));
 
-// Middleware de Swagger 
-app.use(swaggerApp);
+// Configuración de Swagger
+const swaggerOptions = {
+    swaggerDefinition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Ecommerce-Coder API",
+            version: "1.0.0",
+            description: "API para la gestión de productos y carritos en proyecto ecommerce",
+            contact: {
+                name: "Matias Riquelme",
+                email: "matiasriquelme633@gmail.com",
+            },
+        },
+        servers: [
+            {
+                url: "http://localhost:3000",
+                description: "Servidor local",
+            },
+        ],
+    },
+    apis: ["./docs/*.yaml"]
+};
+const spec = swaggerJSDoc(swaggerOptions);
+app.use("/api-docs", swaggerUI.serve, swaggerUI.setup(spec));
 
-// Inicialización de Passport
-import { initializePassport } from './config/passport.config.js';
-initializePassport();
+// Inicializar Passport
+initPassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Rutas
-app.use('/api/users', userRouter);
-app.use('/', vistasRouter);
-app.use('/api/products', productRouter);
-app.use('/api/carts', cartRouter);
-app.use('/auth', authRouter);
-app.use('/session', sessionRouter);
-app.use('/api/payments', paymentRoutes); 
+// Configuración del motor de plantillas Handlebars
+app.engine("handlebars", engine());
+app.set("view engine", "handlebars");
+app.set("views", path.join(__dirname, "views"));
 
-// Endpoint para generar productos de prueba
-app.get('/mockingproducts', (req, res) => {
-    const products = generateMockProducts();
-    res.json(products);
-});
-
-// Manejo de usuarios conectados a través de Socket.IO
-let usuarios = [];
-const server = app.listen(PORT, () => {
-    logger.info(`Servidor escuchando en el puerto ${PORT}`); 
-});
-
-export const io = new Server(server);
-
-io.on("connection", (socket) => {
-    logger.info(`Se conectó el cliente ${socket.id}`); 
-
-    socket.on("id", async (userName) => {
-        usuarios[socket.id] = userName;
-        let messages = await messageModelo.find();
-        socket.emit("previousMessages", messages);
-        socket.broadcast.emit("newUser", userName);
-    });
-
-    socket.on("newMessage", async (userName, message) => {
-        await messageModelo.create({ user: userName, message: message });
-        io.emit("sendMessage", userName, message);
-    });
-
-    socket.on("disconnect", () => {
-        const userName = usuarios[socket.id];
-        delete usuarios[socket.id];
-        if (userName) {
-            io.emit("userDisconnected", userName);
-        }
-    });
-});
-
-// Conexión a la base de datos MongoDB
-const connDB = async () => {
-    try {
-        await mongoose.connect(
-            DB_CONNECTION_STRING,
-            { useNewUrlParser: true, useUnifiedTopology: true, dbName: "eCommerce" }
-        );
-        logger.info("Mongoose conectado");  
-    } catch (error) {
-        logger.error("Error al conectar a MongoDB", error);  
-    }
-};
-
-connDB();
-
-// Middleware de manejo de errores 
+// Middleware para manejo de errores
 app.use(errorHandler);
 
-// Endpoint para probar el logger
-app.get('/loggerTest', (req, res) => {
-    logger.debug('Debug log');
-    logger.http('HTTP log');
-    logger.info('Info log');
-    logger.warn('Warning log');
-    logger.error('Error log');
-    logger.fatal('Fatal log');
-    res.send('Logs probados!');
+// Definición de rutas
+app.use('/', views);
+app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);
+app.use("/api/sessions", sessionsRouter);
+app.use('/api/reset', resetPasswordRouter);
+app.use('/loggerTest', loggerTestRouter);
+
+// Conexión a la base de datos
+await dbConnection();
+
+// Iniciar el servidor Express
+const expressServer = app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
 });
 
-export { app };
+// Configuración del servidor WebSocket
+const socketServer = new Server(expressServer);
+
+// Manejo de conexiones WebSocket
+socketServer.on('connection', async (socket) => {
+    logger.info('Usuario conectado desde el frontend');
+
+    try {
+        // Enviar productos actuales al cliente cuando se conecta
+        const { payload } = await getProductsService({});
+        socket.emit('productos', payload);
+
+        // Manejar la adición de productos desde el cliente
+        socket.on('agregarProducto', async (producto) => {
+            try {
+                const newProduct = await addProductService({ ...producto });
+                if (newProduct) {
+                    const productos = await getProductsService({});
+                    socket.emit('productos', productos.payload);
+                }
+            } catch (error) {
+                logger.error("Error al agregar producto: ", error);
+            }
+        });
+
+        // Enviar mensajes almacenados al cliente
+        const messages = await messageModel.find().lean();
+        socket.emit('message', messages);
+
+        // Manejar la recepción de mensajes desde el cliente
+        socket.on('message', async (data) => {
+            try {
+                const newMessage = await messageModel.create({ ...data });
+                if (newMessage) {
+                    const messages = await messageModel.find().lean();
+                    socketServer.emit('messageLogs', messages);
+                }
+            } catch (error) {
+                logger.error("Error al procesar mensaje: ", error);
+            }
+        });
+
+        // Manejar la eliminación de todos los mensajes
+        socket.on('delete', async () => {
+            try {
+                await messageModel.deleteMany();
+            } catch (error) {
+                logger.error("Error al eliminar mensajes: ", error);
+            }
+        });
+
+        // Notificar a otros usuarios sobre la conexión de un nuevo usuario
+        socket.broadcast.emit('nuevo_user');
+
+    } catch (error) {
+        logger.error("Error en la conexión WebSocket: ", error);
+    }
+});
+
+export default app;

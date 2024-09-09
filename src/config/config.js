@@ -1,10 +1,20 @@
+import dotenv from "dotenv"
 
-import dotenv from 'dotenv';
+dotenv.config({
+    path: "./src/.env",
+    override: true
+})
 
-dotenv.config();
-
-export const PORT = process.env.PORT || 3000;
-export const SESSION_SECRET = process.env.SESSION_SECRET;
-export const DB_CONNECTION_STRING = process.env.DB_CONNECTION_STRING;
-export const EMAIL_USER = process.env.EMAIL_USER;
-export const EMAIL_PASS = process.env.EMAIL_PASS;
+export const config={
+    PORT: process.env.PORT||3001,
+    MONGO_URL: process.env.MONGO_URL,
+    DB_NAME: process.env.DB_NAME,
+    SECRET: process.env.SECRET,
+    clientID: process.env.clientID,
+    clientSecret: process.env.clientSecret ,
+    callbackURL: process.env.callbackURL,
+    ENTORNO: process.env.ENTORNO||"test",
+    RESET_PASSWORD_URL: process.env.RESET_PASSWORD_URL,
+    EMAIL_USER: process.env.EMAIL_USER,
+    EMAIL_PASS: process.env.EMAIL_PASS,
+}

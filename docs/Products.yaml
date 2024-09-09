@@ -1,0 +1,67 @@
+tags:
+  - name: Products
+    description: Gestión de productos
+paths:
+  /api/products:
+    get:
+      summary: Obtener todos los productos
+      tags: [Products]
+      responses:
+        200:
+          description: Lista de productos - Tener en cuenta que los productos estan mostrados por paginas con un limite de 10 productos (puesta por defecto). Sin embargo, es posible navegar entre las paginas cambiando la ruta, por ejemplo 'api/products/?page=2' y cambiar el limite de la siguiente manera, '/api/products/?page=2&limit=5'
+    post:
+      summary: Agregar un nuevo producto
+      tags: [Products]
+      responses:
+        201:
+          description: Producto agregado
+        401:
+          description: Usuario no autenticado, el usuario necesitará iniciar sesion para usar este endpoint. Por favor, tener en cuenta que solo el Admin y usuarios premium pueden agregar y eliminar productos. El usuario premium solo podra eliminar los productos creados por el mismo.
+  /api/products/{pid}:
+    get:
+      summary: Obtener un producto por ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto obtenido
+        404:
+          description: Producto no encontrado
+        401:
+          description: Usuario no autenticado, el usuario necesitará iniciar sesion para usar este endpoint. Por favor, tener en cuenta que solo el Admin y usuarios premium pueden agregar y eliminar productos. El usuario premium solo podra eliminar los productos creados por el mismo.
+    put:
+      summary: Actualizar un producto por ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto actualizado
+        401:
+          description: Usuario no autenticado, el usuario necesitará iniciar sesion para usar este endpoint. Por favor, tener en cuenta que solo el Admin y usuarios premium pueden agregar y eliminar productos. El usuario premium solo podra eliminar los productos creados por el mismo.
+    delete:
+      summary: Eliminar un producto por ID
+      tags: [Products]
+      parameters:
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto eliminado
+        401:
+          description: Usuario no autenticado, el usuario necesitará iniciar sesion para usar este endpoint. Por favor, tener en cuenta que solo el Admin y usuarios premium pueden agregar y eliminar productos. El usuario premium solo podra eliminar los productos creados por el mismo.

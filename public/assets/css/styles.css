@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+
+
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    display: flex;
+}
+
+:root {
+    --formsBg: #e3e5d7;
+    --formsButtons: #a5c8ca;
+    --formsButtonsHover: #586875;
+    --formsInputs: ;
+    --formsShadow1: #e3e5d7;
+    --formsShadow2: #bdd6d2;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th,
+td {
+    border: 1px solid var(--formsBg);
+    padding: 9px;
+    text-align: left;
+
+}
+
+th {
+    background-color: var(--formsBg);
+    font-weight: 800;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+
+}
+
+li {
+    margin-bottom: 10px;
+
+}
+
+.formulario {
+    width: 100%;
+    margin-top: 20px;
+    background-color: var(--formsBg);
+}
+
+
+form div {
+    margin-bottom: 15px;
+    background-color: var(--formsBg);
+}
+
+form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+form input[type="text"],
+form textarea,
+form input[type="number"],
+form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--formsShadow2);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+/* #producto-form button {
+    padding: 10px 20px;
+    background-color: var(--formsButtons);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#producto-form button:hover {
+    background-color: var(--formsButtonsHover);
+} */
+
+button {
+    padding: 10px 20px;
+    background-color: var(--formsButtons);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--formsButtonsHover);
+}
+
+table {
+    margin: 20px;
+}
+
+.formulario {
+    border-radius: 5px;
+    border: solid 1px black;
+    margin: 2px;
+    padding: 20px;
+}
+
+
+.links {
+    font-style: none;
+    text-decoration: none;
+    font-size: 20px;
+    padding: 10px;
+    background-color: var(--formsShadow1);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: black;
+    font-weight: 900;
+    margin-top: 20px;
+    display: inline-block;
+}
+
+.carts {
+    display: flex;
+    height: 100dvh;
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+
+}
+
+header {
+    display: flex;
+    align-items: start;
+    margin: 20px;
+    text-align: center;
+}
+
+.carts div {
+    
+    margin: 10px;
+    background-color: var(--formsBg);
+    padding: 20px;
+    width: 25%;
+    height: auto;
+    border-radius: 10px;
+    text-align: start;
+    margin: 20px;
+    align-items: center;
+}
+
+.pagination {
+    margin: 20px;
+}
+
+.pagination span {
+    margin: 10px;
+}
+
+.cards-section{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    
+}
+
+x-card div{
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    border: #586875 2px solid ;
+    border-radius: 5px;
+    padding: 10px;
+    color: black;
+    margin: 20px;
+}
+
+x-card div p{
+    margin: 5px;
+}
+
+x-card div button{
+    margin: 5px;
+}
+
+.products-content h3{
+    text-align: center;
+    margin: 20px;
+}
+
+.products-content a{
+    text-align: center;
+    width: 25%;
+}
+
+.products-content{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+}
+
+.ruta{
+    text-decoration: none;
+    border: #586875 2px solid ;
+    border-radius: 5px;
+    padding: 20px;
+    color: black;
+    font-weight: 600;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

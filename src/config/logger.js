@@ -1,49 +1,51 @@
-import { createLogger, format, transports } from 'winston';
 import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
+import colors from 'colors';
+import { config } from './config.js';
 
+const { combine, timestamp, printf } = winston.format;
 
-const logFormat = printf(({ level, message, timestamp, stack }) => {
-  // Incluimos el stack trace solo para errores
-  return `${timestamp} ${level}: ${message} ${stack ? '\n' + stack : ''}`;
+// Definimos el tema de colores para los diferentes niveles de logs
+colors.setTheme({
+    debug: 'blue',
+    http: 'magenta',
+    info: 'green',
+    warn: 'yellow',
+    error: 'red',
+    fatal: 'bgRed white'
 });
 
-const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug', 
-  format: combine(
-    timestamp({
-      format: 'YYYY-MM-DD HH:mm:ss', 
-    }),
-    logFormat,
-    format.errors({ stack: true }) 
-  ),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        colorize({ all: true }), 
+// Formato personalizado para los logs
+const logFormat = printf(({ level, message, timestamp }) => {
+    const colorizedLevel = colors[level](`[${level.toUpperCase()}]`);
+    return `${timestamp} ${colorizedLevel}: ${message}`;
+});
+
+// Logger para entornos de desarrollo
+const developmentLogger = winston.createLogger({
+    level: 'debug',
+    format: combine(
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         logFormat
-      )
-    }),
-    new DailyRotateFile({
-      filename: 'logs/application-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d'
-    })
-  ],
+    ),
+    transports: [
+        new winston.transports.Console()
+    ]
 });
 
-
-// Manejo de excepciones no capturadas
-process.on('uncaughtException', (err) => {
-  logger.error('Excepción no capturada', err);
-  process.exit(1); 
+// Logger para entornos de producción
+const productionLogger = winston.createLogger({
+    level: 'info',
+    format: combine(
+        timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+        logFormat
+    ),
+    transports: [
+        new winston.transports.Console(),
+        new winston.transports.File({ filename: 'errors.log', level: 'error' }) // Guarda solo errores en archivo
+    ]
 });
 
-// Manejo de promesas rechazadas
-process.on('unhandledRejection', (err) => {
-  logger.error('Promesa rechazada', err);
-});
+// Selecciona el logger dependiendo del entorno
+const logger = config.ENTORNO === 'production' ? productionLogger : developmentLogger;
 
 export default logger;

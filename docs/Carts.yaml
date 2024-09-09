@@ -1,0 +1,143 @@
+tags:
+  - name: Carts
+    description: Gestión de carritos de compras
+paths:
+  /api/carts/{cid}:
+    get:
+      summary: Obtener un carrito por ID
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        200:
+          description: Carrito obtenido
+        404:
+          description: Carrito no encontrado
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+    delete:
+      summary: Eliminar un carrito
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        200:
+          description: Carrito eliminado
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+  /api/carts:
+    post:
+      summary: Crear un nuevo carrito
+      tags: [Carts]
+      responses:
+        201:
+          description: Carrito creado
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+  /api/carts/{cid}/product/{pid}:
+    post:
+      summary: Agregar un producto al carrito
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto agregado al carrito
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+  /api/carts/{cid}/products/{pid}:
+    delete:
+      summary: Eliminar un producto del carrito
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto eliminado del carrito
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+    put:
+      summary: Actualizar un producto del carrito
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+        - in: path
+          name: pid
+          required: true
+          schema:
+            type: string
+          description: ID del producto
+      responses:
+        200:
+          description: Producto actualizado en el carrito
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+  /api/carts/{cid}/purchase:
+    post:
+      summary: Crear un ticket de compra
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: cid
+          required: true
+          schema:
+            type: string
+          description: ID del carrito
+      responses:
+        200:
+          description: Ticket de compra creado
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
+  /api/carts/delete/{tid}:
+    delete:
+      summary: Eliminar un ticket
+      tags: [Carts]
+      parameters:
+        - in: path
+          name: tid
+          required: true
+          schema:
+            type: string
+          description: ID del ticket
+      responses:
+        200:
+          description: Ticket eliminado
+        401:
+          description: Usuario no autenticado, los usuarios necesitaran iniciar sesión para poder acceder a su carrito. El carrito esta directamente ligado a los datos del usuario por lo que no se puede acceder si no hay una sesión activa.
